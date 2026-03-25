@@ -43,5 +43,7 @@ require("./commands/alarms.js")(program);
 require("./commands/sip-trace.js")(program);
 require("./commands/kpi.js")(program);
 require("./commands/debug.js")(program);
+require("./commands/test-call.js")(program);
+require("./commands/device.js")(program);
 
 program.parse();
