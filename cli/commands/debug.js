@@ -14,6 +14,7 @@ module.exports = function registerDebugCommand(program) {
     .command("collect")
     .description("Trigger debug file creation and download it")
     .option("--output <file>", "output file path", "debug-file.tar.gz")
+    .option("--no-core-dump", "exclude core dump from debug file")
     .action(async (cmdOpts, command) => {
       const startTime = Date.now();
       const globalOpts = command.optsWithGlobals();
@@ -24,19 +25,31 @@ module.exports = function registerDebugCommand(program) {
         const client = await createClient(globalOpts);
 
         process.stdout.write("Triggering debug file creation...\n");
-        await client.post("/actions/debugFile", {});
+        const createResp = await client.post("/files/create/debugFile", {
+          attachCoreDump: cmdOpts.coreDump !== false,
+        });
+        const txId =
+          createResp.data && createResp.data.transactionId
+            ? createResp.data.transactionId
+            : null;
+        if (txId) {
+          process.stdout.write(`Transaction: ${txId}\n`);
+        }
 
         process.stdout.write("Waiting for debug file to be ready");
         let ready = false;
         for (let i = 0; i < 60; i++) {
-          await new Promise((r) => setTimeout(r, 3000));
+          await new Promise((r) => setTimeout(r, 5000));
           process.stdout.write(".");
           try {
             const resp = await client.get("/files/debugFile", {
               responseType: "arraybuffer",
               validateStatus: (s) => s < 500,
             });
-            if (resp.status === 200 && resp.data.length > 0) {
+            if (
+              (resp.status === 200 || resp.status === 201) &&
+              resp.data.length > 0
+            ) {
               ready = true;
               const outputPath = path.resolve(cmdOpts.output);
               fs.writeFileSync(outputPath, resp.data);
@@ -53,7 +66,7 @@ module.exports = function registerDebugCommand(program) {
         if (!ready) {
           printError(
             new Error(
-              "Debug file was not ready after 3 minutes. Try downloading manually.",
+              "Debug file was not ready after 5 minutes. Try downloading manually.",
             ),
           );
         }
