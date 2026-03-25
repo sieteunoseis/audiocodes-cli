@@ -7,6 +7,8 @@ A Node.js CLI tool for troubleshooting VoIP on AudioCodes Mediant VE SBCs via th
 **Target:** AudioCodes Mediant VE (virtual edition)
 **API:** AudioCodes REST API (Basic auth)
 **Primary use cases:** Troubleshooting active calls, SIP trace capture, alarm monitoring
+**No SDK/library layer** — this is a CLI-only tool. `cli/utils/connection.js` is the sole API client. A reusable library can be extracted later if needed.
+**API validation required** — all API paths below are assumed based on AudioCodes REST API documentation. Exact endpoints, response shapes, and authentication behavior must be validated against the lab device before implementation begins.
 
 ## Project Structure
 
@@ -51,7 +53,7 @@ audiocodes-cli/
 
 ### Config file
 
-Location: `~/.audiocodes-cli/config.json` (mode 0o600)
+Location: `~/.audiocodes-cli/config.json` (mode 0o600). Override with `AUDIOCODES_CONFIG_DIR` env var (used for test isolation).
 
 ```json
 {
@@ -70,7 +72,7 @@ Location: `~/.audiocodes-cli/config.json` (mode 0o600)
 ### Precedence (lowest → highest)
 
 1. Config file (`~/.audiocodes-cli/config.json`)
-2. Environment variables (`AUDIOCODES_HOST`, `AUDIOCODES_USERNAME`, `AUDIOCODES_PASSWORD`)
+2. Environment variables (`AUDIOCODES_HOST`, `AUDIOCODES_USERNAME`, `AUDIOCODES_PASSWORD`, `AUDIOCODES_CONFIG_DIR`)
 3. CLI flags (`--host`, `--username`, `--password`)
 
 ### Secret Server support
@@ -83,7 +85,7 @@ Location: `~/.audiocodes-cli/config.json` (mode 0o600)
 audiocodes-cli config add <name> --host <h> --username <u> --password <p> [--insecure]
 audiocodes-cli config use <name>
 audiocodes-cli config list
-audiocodes-cli config show
+audiocodes-cli config show                                                    # passwords masked in output
 audiocodes-cli config remove <name>
 audiocodes-cli config test
 ```
@@ -97,6 +99,7 @@ audiocodes-cli config test
 --password <pass>  Override password
 --device <name>    Select named device from config
 --insecure         Skip TLS verification
+--clean            Remove empty/null values from results
 --no-audit         Disable audit logging
 --debug            Enable debug output
 ```
@@ -115,9 +118,11 @@ audiocodes-cli calls list --format json
 **API:** `GET /api/v1/activeCalls`
 **Table columns:** Call ID, Source, Destination, Duration, Codec, SIP Status, IP Group
 
-### `audiocodes-cli sip-trace start`
+### `audiocodes-cli sip-trace start` (Pending Lab Validation)
 
-Start capturing SIP signaling.
+Start capturing SIP signaling. This command's implementation depends on what the AudioCodes REST API exposes for debug/trace capture. Must be validated against the lab before implementation.
+
+**Possible interfaces (to be confirmed):**
 
 ```
 audiocodes-cli sip-trace start                    # Stream to stdout
@@ -126,7 +131,13 @@ audiocodes-cli sip-trace start --filter <value>   # Filter by caller/callee/IP
 audiocodes-cli sip-trace stop                     # Stop active trace
 ```
 
-**Note:** Exact API endpoint depends on what the Mediant VE REST API exposes. To be validated against lab.
+**Implementation risks:**
+
+- API may use polling, WebSocket, or syslog — architecture differs based on mechanism
+- Filtering capabilities depend on what the API supports
+- If no trace API exists, this command will be deferred to a future release
+
+**Fallback:** If the REST API does not support live SIP trace, this command may instead pull from debug recording or syslog endpoints.
 
 ### `audiocodes-cli alarms list`
 
@@ -148,7 +159,7 @@ Connectivity and health check.
 - Test HTTP connectivity to device
 - Test authentication
 - Report TLS status
-- Show device info (model, firmware version, uptime)
+- Show device info (model, firmware version, uptime) — endpoint TBD, likely `GET /api/v1/status` or `/api/v1/deviceInfo`
 
 ```
 audiocodes-cli doctor
@@ -165,6 +176,8 @@ audiocodes-cli doctor
 - TLS warning suppression (same pattern as cisco-yang)
 
 ### Error handling
+
+Uses string matching in `printError()` for contextual hints (no custom error classes — same pragmatic approach as cisco-yang implementation).
 
 ```
 try/catch at command level → printError() → process.exitCode = 1
