@@ -39,7 +39,7 @@ Tested with AudioCodes Mediant VE SBC firmware `7.40A.250.265` and `7.40A.600.20
 
 ```bash
 # Configure a device
-audiocodes-cli config add lab-ve --host 10.0.0.50 --username Admin --password Admin --insecure
+audiocodes-cli config add lab-ve --host 10.0.0.50 --username Admin --password "$AUDIOCODES_PASSWORD" --insecure
 
 # Test the connection
 audiocodes-cli config test
