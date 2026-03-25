@@ -40,6 +40,6 @@ require("./commands/config.js")(program);
 require("./commands/doctor.js")(program);
 require("./commands/calls.js")(program);
 require("./commands/alarms.js")(program);
-// require("./commands/sip-trace.js")(program);
+require("./commands/sip-trace.js")(program);
 
 program.parse();
