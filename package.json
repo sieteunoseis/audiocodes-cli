@@ -19,6 +19,9 @@
   "scripts": {
     "test": "node ./test/tests.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sieteunoseis/audiocodes-cli.git"
