@@ -33,7 +33,7 @@ npx skills add sieteunoseis/audiocodes-cli
 
 If you are using self-signed certificates on AudioCodes devices you may need to disable TLS verification, or use the `--insecure` CLI flag.
 
-Tested with AudioCodes Mediant VE SBC firmware `7.40A.250.265`.
+Tested with AudioCodes Mediant VE SBC firmware `7.40A.250.265` and `7.40A.600.203`.
 
 ## Quick Start
 
@@ -53,8 +53,12 @@ audiocodes-cli alarms list
 # View call statistics
 audiocodes-cli calls list
 
-# View per-IP-group stats
-audiocodes-cli calls list --scope ipGroup
+# Browse KPI metrics
+audiocodes-cli kpi list
+audiocodes-cli kpi show system/licenseStats/global
+
+# Backup device config
+audiocodes-cli device backup
 ```
 
 ## Configuration
@@ -72,15 +76,52 @@ Auth precedence: CLI flags > env vars (`AUDIOCODES_HOST`, `AUDIOCODES_USERNAME`,
 
 Config stored at `~/.audiocodes-cli/config.json`. Supports [ss-cli](https://github.com/sieteunoseis/ss-cli) `<ss:ID:field>` placeholders.
 
+The host field supports both `https://hostname` (default) and `http://hostname` for devices without TLS.
+
 ## CLI Commands
 
 | Command                                | Description                                          |
 | -------------------------------------- | ---------------------------------------------------- |
 | `calls list`                           | View call statistics (global, per-IP-group, per-SRD) |
 | `alarms list`                          | List active alarms with optional severity filter     |
-| `sip-trace start/stop`                 | SIP signaling trace capture (pending lab validation) |
+| `alarms history`                       | View alarm history                                   |
+| `kpi list`                             | List available KPI categories                        |
+| `kpi show <path>`                      | Show real-time KPI metrics at a path                 |
+| `kpi history <path>`                   | Show historical KPI metrics (15-min intervals)       |
+| `device status`                        | Show device status information                       |
+| `device backup`                        | Download device INI configuration                    |
+| `device save`                          | Save running config to NVRAM                         |
+| `device license`                       | Show license information                             |
+| `device tls`                           | Show TLS certificate status                          |
+| `test-call dial`                       | Start a SIP test call from the SBC                   |
+| `test-call status <id>`                | Get test call status and results                     |
+| `test-call show`                       | Show test call configuration                         |
+| `test-call drop <id>`                  | End an active test call                              |
+| `debug collect`                        | Trigger and download debug file                      |
 | `doctor`                               | Check REST API connectivity and device health        |
 | `config add/use/list/show/remove/test` | Manage device configurations                         |
+
+## Firmware Compatibility
+
+Not all CLI commands are available on every firmware version. The table below shows command availability by firmware build:
+
+| Command                      | 7.40A.250 (LTS) | 7.40A.600+ (LR) | 7.40A.604+ (LTS) |
+| ---------------------------- | :-------------: | :-------------: | :--------------: |
+| `calls list`                 |       Yes       |       Yes       |       Yes        |
+| `alarms list`                |       Yes       |       Yes       |       Yes        |
+| `alarms history`             |       Yes       |       Yes       |       Yes        |
+| `kpi list/show/history`      |       Yes       |       Yes       |       Yes        |
+| `device status`              |       Yes       |       Yes       |       Yes        |
+| `device backup`              |       Yes       |       Yes       |       Yes        |
+| `device save`                |       Yes       |       Yes       |       Yes        |
+| `device license`             |       Yes       |       Yes       |       Yes        |
+| `device tls`                 |       Yes       |       Yes       |       Yes        |
+| `debug collect`              |       No        |       Yes       |       Yes        |
+| `test-call dial/status/drop` |       No        |       Yes       |       Yes        |
+| `doctor`                     |       Yes       |       Yes       |       Yes        |
+| `config *`                   |       Yes       |       Yes       |       Yes        |
+
+> **Note:** The `test-call` and `debug collect` commands require firmware 7.40A.600 or later. Devices on 7.40A.250.x will return errors for these commands.
 
 ## Global Flags
 
