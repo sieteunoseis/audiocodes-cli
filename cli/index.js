@@ -36,7 +36,7 @@ program
   .option("--debug", "enable debug logging");
 
 // Commands registered in subsequent tasks
-// require("./commands/config.js")(program);
+require("./commands/config.js")(program);
 // require("./commands/doctor.js")(program);
 // require("./commands/calls.js")(program);
 // require("./commands/alarms.js")(program);
