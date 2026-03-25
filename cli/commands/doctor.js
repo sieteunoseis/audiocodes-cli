@@ -73,10 +73,15 @@ module.exports = function registerDoctorCommand(program) {
 
         if (resp.data) {
           const info = resp.data;
-          if (info.model) ok(`Model: ${info.model}`);
-          if (info.firmwareVersion || info.version)
-            ok(`Firmware: ${info.firmwareVersion || info.version}`);
-          if (info.uptime) ok(`Uptime: ${info.uptime}`);
+          if (info.productType) ok(`Model: ${info.productType}`);
+          if (info.versionID) ok(`Firmware: ${info.versionID}`);
+          if (info.systemUpTime != null) {
+            const days = Math.floor(info.systemUpTime / 8640000);
+            const hours = Math.floor((info.systemUpTime % 8640000) / 360000);
+            ok(`Uptime: ${days}d ${hours}h`);
+          }
+          if (info.serialNumber) ok(`Serial: ${info.serialNumber}`);
+          if (info.operationalState) ok(`State: ${info.operationalState}`);
         }
       } catch (err) {
         const msg = err.message || String(err);

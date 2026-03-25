@@ -20,8 +20,8 @@ module.exports = function registerAlarmsCommand(program) {
 
       try {
         const client = await createClient(globalOpts);
-        const resp = await client.get("/alarms");
-        let data = resp.data;
+        const resp = await client.get("/alarms/active");
+        let data = resp.data.alarms || resp.data;
 
         if (cmdOpts.severity) {
           const level = cmdOpts.severity.toLowerCase();

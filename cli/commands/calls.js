@@ -8,7 +8,8 @@ module.exports = function registerCallsCommand(program) {
 
   calls
     .command("list")
-    .description("List active calls on the SBC")
+    .description("List call statistics on the SBC")
+    .option("--scope <scope>", "stats scope: global, ipGroup, srd", "global")
     .action(async (cmdOpts, command) => {
       const startTime = Date.now();
       const globalOpts = command.optsWithGlobals();
@@ -17,8 +18,16 @@ module.exports = function registerCallsCommand(program) {
 
       try {
         const client = await createClient(globalOpts);
-        const resp = await client.get("/activeCalls");
-        const data = resp.data;
+        const scope = cmdOpts.scope || "global";
+        const resp = await client.get(`/kpi/current/sbc/callStats/${scope}`);
+        const items = resp.data.items || resp.data;
+        const data = Array.isArray(items)
+          ? items.map((i) => ({
+              name: i.name,
+              value: i.value,
+              description: i.description,
+            }))
+          : items;
         const format = globalOpts.format;
         await printResult(data, format);
       } catch (err) {
