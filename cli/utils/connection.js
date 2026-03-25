@@ -82,8 +82,16 @@ async function createClient(flags = {}) {
       })(process.emitWarning);
   }
 
+  let baseURL;
+  if (config.host.startsWith("http://") || config.host.startsWith("https://")) {
+    baseURL = config.host.replace(/\/+$/, "") + "/api/v1";
+  } else {
+    const protocol = config.insecure || flags.insecure ? "https" : "https";
+    baseURL = `${protocol}://${config.host}/api/v1`;
+  }
+
   const client = axios.create({
-    baseURL: `https://${config.host}/api/v1`,
+    baseURL,
     auth: {
       username: config.username,
       password: config.password,
