@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/audiocodes-cli.svg)](https://www.npmjs.com/package/audiocodes-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/node/v/audiocodes-cli.svg)](https://nodejs.org)
+[![Skills](https://img.shields.io/badge/skills.sh-audiocodes--cli-blue)](https://skills.sh/sieteunoseis/audiocodes-cli)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/automatebldrs)
 
 A CLI tool for troubleshooting VoIP on AudioCodes Mediant VE SBCs via the REST API. Query call statistics, monitor alarms, check device health, and manage device configurations.
@@ -20,6 +21,12 @@ Or run without installing:
 
 ```bash
 npx audiocodes-cli --help
+```
+
+### AI Agent Skills
+
+```bash
+npx skills add sieteunoseis/audiocodes-cli
 ```
 
 ## Requirements

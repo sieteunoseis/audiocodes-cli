@@ -1,0 +1,25 @@
+{
+  "name": "audiocodes-cli",
+  "description": "AudioCodes Mediant VE SBC CLI skills for troubleshooting VoIP — call statistics, alarms, device health, and SIP trace via the REST API",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jeremy Worden",
+    "url": "https://github.com/sieteunoseis"
+  },
+  "homepage": "https://github.com/sieteunoseis/audiocodes-cli#readme",
+  "repository": "https://github.com/sieteunoseis/audiocodes-cli",
+  "license": "MIT",
+  "keywords": [
+    "audiocodes",
+    "mediant",
+    "sbc",
+    "voip",
+    "sip",
+    "troubleshooting",
+    "alarms",
+    "call-statistics",
+    "cli",
+    "rest-api",
+    "session-border-controller"
+  ]
+}
