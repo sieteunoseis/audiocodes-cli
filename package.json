@@ -1,0 +1,30 @@
+{
+  "name": "audiocodes-cli",
+  "version": "0.1.0",
+  "description": "CLI for AudioCodes Mediant VE SBCs via REST API",
+  "author": "sieteunoseis",
+  "license": "MIT",
+  "keywords": [
+    "audiocodes",
+    "mediant",
+    "sbc",
+    "voip",
+    "sip",
+    "troubleshooting",
+    "cli"
+  ],
+  "bin": {
+    "audiocodes-cli": "./bin/audiocodes-cli.js"
+  },
+  "scripts": {
+    "test": "node ./test/tests.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "commander": "^14.0.3",
+    "cli-table3": "^0.6.5",
+    "csv-stringify": "^6.7.0",
+    "@toon-format/toon": "^2.1.0",
+    "update-notifier": "^7.3.1"
+  }
+}
