@@ -1,6 +1,5 @@
 "use strict";
 
-const axios = require("axios");
 const {
   getActiveDevice,
   hasSsPlaceholders,
@@ -86,36 +85,82 @@ async function createClient(flags = {}) {
   if (config.host.startsWith("http://") || config.host.startsWith("https://")) {
     baseURL = config.host.replace(/\/+$/, "") + "/api/v1";
   } else {
-    const protocol = config.insecure || flags.insecure ? "https" : "https";
-    baseURL = `${protocol}://${config.host}/api/v1`;
+    baseURL = `https://${config.host}/api/v1`;
   }
 
-  const client = axios.create({
-    baseURL,
-    auth: {
-      username: config.username,
-      password: config.password,
-    },
-    timeout: 10000,
-    headers: {
-      Accept: "application/json",
-    },
-  });
+  const authHeader =
+    "Basic " +
+    Buffer.from(`${config.username}:${config.password}`).toString("base64");
+  const debug = !!flags.debug;
 
-  if (flags.debug) {
-    client.interceptors.request.use((req) => {
+  async function request(method, urlPath, options = {}) {
+    const url = `${baseURL}${urlPath}`;
+
+    if (debug) {
+      process.stderr.write(`DEBUG: ${method.toUpperCase()} ${url}\n`);
+    }
+
+    const fetchOpts = {
+      method,
+      headers: {
+        Authorization: authHeader,
+        Accept: "application/json",
+        ...options.headers,
+      },
+      signal: AbortSignal.timeout(10000),
+    };
+
+    if (options.data !== undefined) {
+      fetchOpts.body = JSON.stringify(options.data);
+      fetchOpts.headers["Content-Type"] = "application/json";
+    }
+
+    if (options.responseType === "text") {
+      fetchOpts.headers.Accept = "text/plain";
+    }
+
+    const response = await fetch(url, fetchOpts);
+
+    if (debug) {
       process.stderr.write(
-        `DEBUG: ${req.method.toUpperCase()} ${req.baseURL}${req.url}\n`,
+        `DEBUG: ${response.status} ${response.statusText}\n`,
       );
-      return req;
-    });
-    client.interceptors.response.use((resp) => {
-      process.stderr.write(`DEBUG: ${resp.status} ${resp.statusText}\n`);
-      return resp;
-    });
+    }
+
+    if (
+      !response.ok &&
+      !(options.validateStatus && options.validateStatus(response.status))
+    ) {
+      const body = await response.text();
+      const err = new Error(`HTTP ${response.status}: ${body}`);
+      err.response = { status: response.status, data: body };
+      throw err;
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    let data;
+    if (options.responseType === "arraybuffer") {
+      data = Buffer.from(await response.arrayBuffer());
+    } else if (
+      options.responseType === "text" ||
+      !contentType.includes("json")
+    ) {
+      data = await response.text();
+    } else {
+      data = await response.json();
+    }
+
+    return { status: response.status, statusText: response.statusText, data };
   }
 
-  return client;
+  return {
+    get: (path, opts) => request("GET", path, opts),
+    post: (path, data, opts) => request("POST", path, { ...opts, data }),
+    put: (path, data, opts) => request("PUT", path, { ...opts, data }),
+    delete: (path, opts) => request("DELETE", path, opts),
+    patch: (path, data, opts) => request("PATCH", path, { ...opts, data }),
+    defaults: { baseURL },
+  };
 }
 
 module.exports = {
